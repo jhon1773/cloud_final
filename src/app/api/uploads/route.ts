@@ -14,11 +14,11 @@ function extFromName(name: string): string {
 }
 
 export async function GET() {
-  const supabaseAdmin = getSupabaseAdmin() as any;
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("uploads")
     .select(
-      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, faq_suggestions",
+      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, preview_snippet, faq_suggestions",
     )
     .order("uploaded_at", { ascending: false });
 
@@ -33,12 +33,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabaseAdmin = getSupabaseAdmin() as any;
+  const supabaseAdmin = getSupabaseAdmin();
   const bucketName = getBucketName();
   const formData = await request.formData();
   const file = formData.get("file");
   const responsible = String(formData.get("responsible") ?? "").trim();
-  const status = String(formData.get("status") ?? "pendiente").trim() || "pendiente";
+  const status = String(formData.get("status") ?? "cargado").trim() || "cargado";
   const observations = String(formData.get("observations") ?? "").trim();
 
   if (!(file instanceof File)) {
@@ -83,6 +83,7 @@ export async function POST(request: Request) {
 
   const contentText = bytes.toString("utf8");
   const faqSuggestions = buildFaqSuggestions(contentText);
+  const previewSnippet = contentText.replace(/\s+/g, " ").trim().slice(0, 900);
 
   const { data: inserted, error: insertError } = await supabaseAdmin
     .from("uploads")
@@ -95,10 +96,11 @@ export async function POST(request: Request) {
       status,
       observations: observations || null,
       storage_path: objectKey,
+      preview_snippet: previewSnippet,
       faq_suggestions: faqSuggestions,
     })
     .select(
-      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, faq_suggestions",
+      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, preview_snippet, faq_suggestions",
     )
     .single();
 

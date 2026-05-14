@@ -1,6 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
 
-let cachedClient: ReturnType<typeof createClient> | null = null;
+type LooseDb = {
+  public: {
+    Tables: Record<
+      string,
+      {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      }
+    >;
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+};
+
+let cachedClient: ReturnType<typeof createClient<LooseDb>> | null = null;
 
 function readEnvOrThrow(key: "NEXT_PUBLIC_SUPABASE_URL" | "SUPABASE_SERVICE_ROLE_KEY") {
   const value = process.env[key];
@@ -18,7 +36,7 @@ export function getSupabaseAdmin() {
   const supabaseUrl = readEnvOrThrow("NEXT_PUBLIC_SUPABASE_URL");
   const supabaseServiceRoleKey = readEnvOrThrow("SUPABASE_SERVICE_ROLE_KEY");
 
-  cachedClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  cachedClient = createClient<LooseDb>(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

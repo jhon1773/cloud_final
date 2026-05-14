@@ -11,6 +11,9 @@ export function UploadDetail({ id }: UploadDetailProps) {
   const [item, setItem] = useState<UploadRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [faqDrafts, setFaqDrafts] = useState<Record<string, { question: string; answer: string }>>(
+    {},
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -29,6 +32,16 @@ export function UploadDetail({ id }: UploadDetailProps) {
 
         if (!cancelled) {
           setItem(payload.item);
+          const initialDrafts = (payload.item.faq_suggestions ?? []).reduce<
+            Record<string, { question: string; answer: string }>
+          >((acc, faq) => {
+            acc[faq.id] = {
+              question: faq.question,
+              answer: faq.answer,
+            };
+            return acc;
+          }, {});
+          setFaqDrafts(initialDrafts);
         }
       } catch (requestError) {
         if (!cancelled) {
@@ -72,6 +85,45 @@ export function UploadDetail({ id }: UploadDetailProps) {
     setItem(payload.item);
   }
 
+  async function saveFaqEdits(faq: FaqSuggestion) {
+    const draft = faqDrafts[faq.id];
+    if (!draft) {
+      return;
+    }
+
+    const response = await fetch(`/api/uploads/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        faqId: faq.id,
+        question: draft.question,
+        answer: draft.answer,
+      }),
+    });
+
+    const payload = (await response.json()) as {
+      item?: UploadRecord;
+      error?: string;
+    };
+
+    if (!response.ok || !payload.item) {
+      setError(payload.error ?? "No se pudo editar la FAQ");
+      return;
+    }
+
+    setItem(payload.item);
+  }
+
+  function updateFaqDraft(faqId: string, field: "question" | "answer", value: string) {
+    setFaqDrafts((current) => ({
+      ...current,
+      [faqId]: {
+        question: field === "question" ? value : (current[faqId]?.question ?? ""),
+        answer: field === "answer" ? value : (current[faqId]?.answer ?? ""),
+      },
+    }));
+  }
+
   if (loading) {
     return <p>Cargando detalle...</p>;
   }
@@ -111,6 +163,17 @@ export function UploadDetail({ id }: UploadDetailProps) {
         </p>
       </section>
 
+      <section className="card space-y-3">
+        <h2 className="text-xl font-semibold">Vista previa de conversaciones</h2>
+        {item.preview_snippet ? (
+          <pre className="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm text-slate-800">
+            {item.preview_snippet}
+          </pre>
+        ) : (
+          <p>No hay vista previa disponible para este archivo.</p>
+        )}
+      </section>
+
       <section className="card space-y-4">
         <h2 className="text-xl font-semibold">FAQs sugeridas</h2>
         {!item.faq_suggestions?.length ? (
@@ -119,13 +182,29 @@ export function UploadDetail({ id }: UploadDetailProps) {
           <ul className="space-y-3">
             {item.faq_suggestions.map((faq) => (
               <li key={faq.id} className="rounded-lg border border-slate-200 p-3">
-                <p className="font-medium">{faq.question}</p>
-                <p className="text-sm text-slate-700">{faq.answer}</p>
+                <input
+                  value={faqDrafts[faq.id]?.question ?? faq.question}
+                  onChange={(event) => updateFaqDraft(faq.id, "question", event.target.value)}
+                  className="input mb-2 w-full"
+                />
+                <textarea
+                  value={faqDrafts[faq.id]?.answer ?? faq.answer}
+                  onChange={(event) => updateFaqDraft(faq.id, "answer", event.target.value)}
+                  rows={2}
+                  className="input w-full"
+                />
                 <p className="mt-1 text-xs text-slate-500">Repeticiones: {faq.count}</p>
                 <p className="mt-1 text-xs text-slate-500 capitalize">
                   Estado actual: {faq.status}
                 </p>
                 <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => saveFaqEdits(faq)}
+                    className="btn-secondary"
+                  >
+                    Guardar cambios
+                  </button>
                   <button
                     type="button"
                     onClick={() => updateFaqStatus(faq, "aprobada")}

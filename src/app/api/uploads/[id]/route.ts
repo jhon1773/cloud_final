@@ -8,12 +8,12 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const supabaseAdmin = getSupabaseAdmin() as any;
+  const supabaseAdmin = getSupabaseAdmin();
   const params = await context.params;
   const { data, error } = await supabaseAdmin
     .from("uploads")
     .select(
-      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, faq_suggestions",
+      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, preview_snippet, faq_suggestions",
     )
     .eq("id", params.id)
     .single();
@@ -32,14 +32,16 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const supabaseAdmin = getSupabaseAdmin() as any;
+  const supabaseAdmin = getSupabaseAdmin();
   const params = await context.params;
   const payload = (await request.json()) as {
     faqId?: string;
     status?: "aprobada" | "rechazada" | "pendiente";
+    question?: string;
+    answer?: string;
   };
 
-  if (!payload.faqId || !payload.status) {
+  if (!payload.faqId) {
     return NextResponse.json(
       { error: "Faltan datos para actualizar la FAQ." },
       { status: 400 },
@@ -61,7 +63,14 @@ export async function PATCH(
 
   const row = data as { faq_suggestions: FaqSuggestion[] | null };
   const current = (row.faq_suggestions ?? []).map((item) =>
-    item.id === payload.faqId ? { ...item, status: payload.status! } : item,
+    item.id === payload.faqId
+      ? {
+          ...item,
+          status: payload.status ?? item.status,
+          question: payload.question?.trim() || item.question,
+          answer: payload.answer?.trim() || item.answer,
+        }
+      : item,
   );
 
   const { data: updated, error: updateError } = await supabaseAdmin
@@ -69,7 +78,7 @@ export async function PATCH(
     .update({ faq_suggestions: current })
     .eq("id", params.id)
     .select(
-      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, faq_suggestions",
+      "id, file_name, uploaded_at, file_type, file_size, responsible, status, observations, storage_path, preview_snippet, faq_suggestions",
     )
     .single();
 

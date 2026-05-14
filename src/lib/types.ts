@@ -1,4 +1,4 @@
-export type UploadStatus = "pendiente" | "procesado" | "error";
+export type UploadStatus = "cargado" | "pendiente" | "procesado" | "error";
 
 export interface FaqSuggestion {
   id: string;
@@ -18,5 +18,16 @@ export interface UploadRecord {
   status: UploadStatus;
   observations: string | null;
   storage_path: string;
+  preview_snippet: string;
   faq_suggestions: FaqSuggestion[];
+}
+
+export interface ProjectMetrics {
+  totalUploads: number;
+  uploadsByStatus: Record<UploadStatus, number>;
+  totalFaqs: number;
+  approvedFaqs: number;
+  rejectedFaqs: number;
+  pendingFaqs: number;
+  approvedRate: number;
 }

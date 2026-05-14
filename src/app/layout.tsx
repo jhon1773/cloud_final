@@ -39,6 +39,7 @@ export default function RootLayout({
             <nav className="nav-links">
               <Link href="/">Inicio</Link>
               <Link href="/historial">Historial</Link>
+              <Link href="/metricas">Metricas</Link>
             </nav>
           </header>
 

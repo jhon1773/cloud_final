@@ -81,7 +81,8 @@ export function UploadForm() {
 
         <div className="field">
           <label htmlFor="status">Estado inicial</label>
-          <select id="status" name="status" defaultValue="pendiente" className="input">
+          <select id="status" name="status" defaultValue="cargado" className="input">
+            <option value="cargado">Cargado</option>
             <option value="pendiente">Pendiente</option>
             <option value="procesado">Procesado</option>
             <option value="error">Error</option>

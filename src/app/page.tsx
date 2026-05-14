@@ -18,6 +18,9 @@ export default function Home() {
           <Link href="/historial" className="btn-secondary">
             Ver historial de cargas
           </Link>
+          <Link href="/metricas" className="btn-secondary">
+            Ver resumen de metricas
+          </Link>
         </div>
       </section>
 
