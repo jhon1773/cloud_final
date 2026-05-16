@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import dynamic from "next/dynamic";
+import UserMenuWrapper from "@/components/user-menu-wrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,9 +43,8 @@ export default function RootLayout({
               <Link href="/metricas">Metricas</Link>
             </nav>
             <div>
-              {/* User menu: shows login or user+logout */}
-              {/* Client component */}
-              <UserMenu />
+              {/* User menu: client boundary wrapper */}
+              <UserMenuWrapper />
             </div>
           </header>
 
@@ -56,7 +55,4 @@ export default function RootLayout({
   );
 }
 
-// Dynamically import UserMenu to avoid server-side rendering issues
-const UserMenu = dynamic(() => import("@/components/user-menu").then((m) => m.UserMenu), {
-  ssr: false,
-});
+// UserMenu is rendered inside a client wrapper component (user-menu-wrapper)

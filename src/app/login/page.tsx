@@ -23,8 +23,9 @@ export default function LoginPage() {
         setMessage("Autenticado correctamente.");
         router.push("/");
       }
-    } catch (err: any) {
-      setMessage(err?.message ?? "Error inesperado");
+    } catch (err: unknown) {
+      if (err instanceof Error) setMessage(err.message);
+      else setMessage(String(err) ?? "Error inesperado");
     } finally {
       setLoading(false);
     }

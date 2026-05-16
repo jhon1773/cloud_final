@@ -15,13 +15,17 @@ export function UserMenu() {
       setEmail(data.session?.user?.email ?? null);
     });
 
-    const { subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) setEmail(session?.user?.email ?? null);
     });
 
+    const subscription = data?.subscription;
+
     return () => {
       mounted = false;
-      subscription?.unsubscribe?.();
+      try {
+        subscription?.unsubscribe();
+      } catch (e) {}
     };
   }, []);
 

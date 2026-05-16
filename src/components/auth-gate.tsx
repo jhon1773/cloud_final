@@ -20,15 +20,21 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       }
     });
 
-    const listener = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         router.push("/login");
       }
     });
 
+    const subscription = data?.subscription;
+
     return () => {
       mounted = false;
-      listener.subscription?.unsubscribe?.();
+      try {
+        subscription?.unsubscribe();
+      } catch (e) {
+        // ignore
+      }
     };
   }, [router]);
 
