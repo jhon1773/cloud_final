@@ -34,10 +34,12 @@ cp .env.example .env.local
 ```
 
 3. Completar variables en `.env.local`:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL` (tu URL de Supabase)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` (anon key — usado por el cliente para auth)
+- `SUPABASE_SERVICE_ROLE_KEY` (service role — solo en servidor, para Storage/DB admin)
 - `SUPABASE_BUCKET` (opcional, por defecto `everwood-conversations`)
+
+Nota: **No** publiques `SUPABASE_SERVICE_ROLE_KEY` en el cliente; mantenla en variables de entorno del servidor o en Vercel.
 
 4. Crear tabla y bucket en Supabase ejecutando el script [supabase/schema.sql](supabase/schema.sql).
 
@@ -65,11 +67,34 @@ Aplicacion disponible en `http://localhost:3000`.
 - `GET /api/uploads/:id`: detalle de carga.
 - `PATCH /api/uploads/:id`: actualiza estado de FAQ sugerida.
 
+### Autenticación
+
+- La app incluye un flujo de login (email/password) usando Supabase Auth.
+- Para habilitarlo, en la consola de Supabase: `Authentication -> Settings` activa `Email` (o el proveedor que uses) y permite signups si quieres.
+- Asegúrate de agregar `NEXT_PUBLIC_SUPABASE_ANON_KEY` en Vercel/entorno para que la UI pueda iniciar sesión.
+
+### Comandos útiles
+
+```bash
+# desarrollo
+npm run dev
+
+# lint
+npm run lint
+
+# build para producción
+npm run build
+```
+
 ## Despliegue en Vercel
 
 1. Subir repositorio a GitHub.
 2. Importar el repo en Vercel.
-3. Configurar variables de entorno (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET`).
+3. Configurar variables de entorno en Vercel:
+	- `NEXT_PUBLIC_SUPABASE_URL`
+	- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+	- `SUPABASE_SERVICE_ROLE_KEY` (server-side only)
+	- `SUPABASE_BUCKET`
 4. Ejecutar deploy.
 5. Verificar flujo completo desde URL publica.
 
