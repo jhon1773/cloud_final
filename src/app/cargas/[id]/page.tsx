@@ -1,4 +1,5 @@
 import { UploadDetail } from "@/components/upload-detail";
+import AuthGate from "@/components/auth-gate";
 
 type UploadDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -6,5 +7,9 @@ type UploadDetailPageProps = {
 
 export default async function UploadDetailPage({ params }: UploadDetailPageProps) {
   const resolvedParams = await params;
-  return <UploadDetail id={resolvedParams.id} />;
+  return (
+    <AuthGate>
+      <UploadDetail id={resolvedParams.id} />
+    </AuthGate>
+  );
 }

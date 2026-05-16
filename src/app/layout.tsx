@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,6 +42,11 @@ export default function RootLayout({
               <Link href="/historial">Historial</Link>
               <Link href="/metricas">Metricas</Link>
             </nav>
+            <div>
+              {/* User menu: shows login or user+logout */}
+              {/* Client component */}
+              <UserMenu />
+            </div>
           </header>
 
           <main className="main-content">{children}</main>
@@ -49,3 +55,8 @@ export default function RootLayout({
     </html>
   );
 }
+
+// Dynamically import UserMenu to avoid server-side rendering issues
+const UserMenu = dynamic(() => import("@/components/user-menu").then((m) => m.UserMenu), {
+  ssr: false,
+});
