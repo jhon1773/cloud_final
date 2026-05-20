@@ -35,6 +35,13 @@ body {
   padding: 1.2rem 0 2.2rem;
 }
 
+.app-shell:has(~ * .bienvenida-page),
+body:has(.bienvenida-page) .app-shell {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+}
+
 .site-header {
   margin-bottom: 1.2rem;
   border: 1px solid #dbe2ea;
